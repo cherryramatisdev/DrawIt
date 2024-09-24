@@ -104,12 +104,16 @@ fun! DrawIt#DrawItStart(...)
 
   " indicate in DrawIt mode
   echo "[DrawIt]"
+  let g:DrawItState = 'DRAW: [ON]'
 
   " DrawItStart: turn on mouse {{{3
   if !exists("b:drawit_keep_mouse")
    let b:drawit_keep_mouse= &mouse
   endif
   setl mouse=a
+
+  setl virtualedit+=all
+  setl tw=0
 
   " DrawItStart: set up DrawIt commands {{{3
   com! -nargs=1 -range SetBrush <line1>,<line2>call DrawIt#SetBrush(<q-args>)
@@ -260,7 +264,10 @@ fun! DrawIt#DrawItStart(...)
   call SaveUserMaps("bn","","<right>","DrawIt")
   call SaveUserMaps("bn","","<up>","DrawIt")
   call SaveUserMaps("bn","","<down>","DrawIt")
-  call SaveUserMaps("bn","","<left>","DrawIt")
+  call SaveUserMaps("bn","","H","DrawIt")
+  call SaveUserMaps("bn","","L","DrawIt")
+  call SaveUserMaps("bn","","K","DrawIt")
+  call SaveUserMaps("bn","","J","DrawIt")
   call SaveUserMaps("bn","","<s-right>","DrawIt")
   call SaveUserMaps("bn","","<s-up>","DrawIt")
   call SaveUserMaps("bn","","<s-down>","DrawIt")
@@ -358,6 +365,10 @@ fun! DrawIt#DrawItStart(...)
   nmap <silent> <buffer> <script> <right>		:set lz<CR>:silent! call <SID>DrawRight()<CR>:set nolz<CR>
   nmap <silent> <buffer> <script> <up>			:set lz<CR>:silent! call <SID>DrawUp()<CR>:set nolz<CR>
   nmap <silent> <buffer> <script> <down>		:set lz<CR>:silent! call <SID>DrawDown()<CR>:set nolz<CR>
+  nmap <silent> <buffer> <script> H		:set lz<CR>:silent! call <SID>DrawLeft()<CR>:set nolz<CR>
+  nmap <silent> <buffer> <script> L		:set lz<CR>:silent! call <SID>DrawRight()<CR>:set nolz<CR>
+  nmap <silent> <buffer> <script> K			:set lz<CR>:silent! call <SID>DrawUp()<CR>:set nolz<CR>
+  nmap <silent> <buffer> <script> J		:set lz<CR>:silent! call <SID>DrawDown()<CR>:set nolz<CR>
   nmap <silent> <buffer> <script> <s-left>		:set lz<CR>:silent! call <SID>MoveLeft()<CR>:set nolz<CR>
   nmap <silent> <buffer> <script> <s-right>		:set lz<CR>:silent! call <SID>MoveRight()<CR>:set nolz<CR>
   nmap <silent> <buffer> <script> <s-up>		:set lz<CR>:silent! call <SID>MoveUp()<CR>:set nolz<CR>
@@ -461,6 +472,7 @@ fun! DrawIt#DrawItStop()
   endif
   unlet b:dodrawit
   echo "[DrawIt off]"
+  let g:DrawItState = ''
 
   if exists("b:drawit_canvas_used")
    " DrawItStop: clean up trailing white space {{{3
@@ -469,6 +481,11 @@ fun! DrawIt#DrawItStop()
    unlet b:drawit_canvas_used
    call s:RestorePosn()
   endif
+
+  setl virtualedit-=all
+  " TODO: Manage to return the `tw` variable to the previous user set
+  " value
+  setl tw=72
 
   " DrawItStop: remove drawit commands {{{3
   delc SetBrush
